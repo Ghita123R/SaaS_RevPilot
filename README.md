@@ -1,28 +1,22 @@
-# SaaS Revenue — dépôt propre pour démarrer de zéro
+# SaaS RevPilot — prototype de démonstration
 
-Prototype de démonstration pour suivre les revenus SaaS reconnus de SyGED, Constellio et CSP.
+## Fichiers
+- `index.html` : application web.
+- `saas_ged_data.json` : données fictives de démonstration.
 
-## Contenu
-- `index.html` : tableau de bord web.
-- `saas_ged_data.json` : données de démonstration extraites du classeur fourni.
-- `SAAS_GED_Gabarit_Donnees_Fictives.xlsx` : classeur source de démonstration.
-- `.gitignore` : exclusions de base.
+## Déploiement GitHub Pages
+Remplacer `index.html` et `saas_ged_data.json` à la racine du dépôt, puis attendre le redéploiement GitHub Pages.
 
-## Publier dans un nouveau dépôt GitHub privé
-1. Sur GitHub, crée un nouveau dépôt avec l’option **Private**.
-2. Ne coche pas l’option pour ajouter un README si tu téléverses déjà ce dossier.
-3. Décompresse ce ZIP sur ton ordinateur.
-4. Dans le nouveau dépôt, clique **Add file → Upload files**.
-5. Téléverse le contenu du dossier (les fichiers, pas uniquement le ZIP), puis **Commit changes**.
+## Fonctionnalités
+- Dashboard mensuel en USD.
+- Forecast du mois suivant basé sur les dates de service.
+- Saisie manuelle de facture et pièce jointe PDF/JPG/PNG (limite de 2 Mo dans ce prototype).
+- Import Excel de certains onglets du gabarit.
+- Export CSV.
 
-## Lancer le prototype
-Le tableau de bord charge `saas_ged_data.json` avec `fetch`, donc ouvre-le via un serveur web local ou un hébergement configuré, pas simplement par double-clic sur `index.html`.
-Pour un test local, dans ce dossier :
-`python -m http.server 8000`
-Puis ouvre `http://localhost:8000`.
-
-## Limites
-- Démonstration uniquement, données fictives.
-- Aucun stockage persistant ni synchronisation Microsoft 365 n’est configuré.
-- Les chiffres sont repris du classeur; valider les règles de reconnaissance du revenu avant un usage opérationnel.
-- Garder le dépôt privé. Pour un déploiement, activer une protection d’accès adaptée.
+## Limites importantes
+- Cette version est un prototype statique, sans base de données ni authentification. Les données de saisie sont stockées dans le navigateur utilisé (localStorage); elles ne sont pas synchronisées entre appareils et peuvent être effacées par le navigateur.
+- Les pièces jointes restent en mémoire de session dans cette version et ne doivent pas être considérées comme archivées durablement.
+- Le code affiche les montants en USD, mais ne convertit pas automatiquement les factures en EUR/MAD/GBP. Pour les factures en devises autres que USD, un taux de change doit être ajouté avant usage.
+- L'import Excel attend des onglets `SAAS SYGED`, `SAAS CSTLO`, `SAAS CSP`; les lignes importées sont supposées en USD. Vérifier les en-têtes et le calcul de reconnaissance avant usage opérationnel.
+- Ne pas déposer de factures ou données financières réelles dans un dépôt public.
