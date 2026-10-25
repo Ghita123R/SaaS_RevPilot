@@ -1,57 +1,543 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SaaS Revenue | Prototype</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SaaS RevPilot | Revenus reconnus</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-:root{--bg:#f5f7fb;--panel:#fff;--ink:#172033;--muted:#667085;--line:#e5e9f2;--accent:#4f46e5;--accent2:#eef2ff}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,Segoe UI,Arial,sans-serif}
-header{background:#111827;color:#fff;padding:24px max(20px,calc((100% - 1400px)/2));display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
-header h1{font-size:23px;margin:0}header p{margin:3px 0 0;color:#cbd5e1;font-size:13px}
-main{max-width:1400px;margin:24px auto;padding:0 20px 48px}.toolbar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;align-items:end}
-.field{display:flex;flex-direction:column;gap:5px;color:var(--muted);font-size:12px;font-weight:600}
-select,input{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:white;color:var(--ink);min-width:180px}
-.pill{display:inline-flex;align-items:center;background:#dcfce7;color:#166534;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700}
-.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
-.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 2px 8px #10182808}
-.card .label{font-size:12px;color:var(--muted);font-weight:600}.card .value{font-size:27px;font-weight:750;margin-top:8px;letter-spacing:-.5px}.card .sub{font-size:12px;color:var(--muted);margin-top:3px}
-.layout{display:grid;grid-template-columns:1.1fr 2fr;gap:16px}.panel h2{font-size:16px;margin:0 0 14px}.chart{display:flex;align-items:end;gap:4px;height:190px;padding:14px 0 24px;border-bottom:1px solid var(--line);overflow:hidden}.barwrap{flex:1;min-width:5px;height:100%;display:flex;align-items:end;position:relative}.bar{width:100%;background:linear-gradient(180deg,#818cf8,#4f46e5);border-radius:4px 4px 0 0;min-height:2px}.barwrap span{position:absolute;bottom:-23px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--muted);white-space:nowrap}
-.legend{font-size:12px;color:var(--muted);margin-top:12px}.tablehead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.tablehead input{min-width:220px} .tablewrap{overflow:auto;max-height:520px}
-table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:13px}th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line)}th{position:sticky;top:0;background:#f8fafc;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}td.num{text-align:right;font-variant-numeric:tabular-nums}
-.status{display:inline-block;padding:3px 8px;background:#f1f5f9;border-radius:20px;font-size:11px}
-.note{color:var(--muted);font-size:12px;margin-top:16px}.error{background:#fef2f2;color:#991b1b;padding:16px;border-radius:12px}
-@media(max-width:900px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}}
-@media(max-width:520px){.cards{grid-template-columns:1fr 1fr}.card .value{font-size:20px}header h1{font-size:19px}}
-</style></head>
+:root{--navy:#101a2d;--blue:#4f46e5;--ink:#172b4d;--muted:#64748b;--line:#e2e8f0;--bg:#f4f7fb;--green:#d1fae5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font:14px/1.45 Inter,Segoe UI,Arial,sans-serif;color:var(--ink)}
+header{background:var(--navy);color:#fff;padding:22px max(24px,calc((100vw - 1450px)/2));display:flex;justify-content:space-between;align-items:center;gap:16px}
+h1{margin:0;font-size:25px}
+header p{margin:5px 0 0;color:#cbd5e1}
+.pill{background:var(--green);color:#065f46;border-radius:20px;padding:8px 13px;font-weight:700;font-size:11px;white-space:nowrap}
+main{max-width:1450px;margin:24px auto;padding:0 22px}
+.toolbar{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin-bottom:20px}
+.field{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:12px;font-weight:600}
+select,input,button{font:inherit;border:1px solid var(--line);border-radius:10px;padding:11px 13px;background:white;color:var(--ink)}
+select,input{min-width:175px}
+input[type=file]{max-width:300px;padding:8px}
+.btn{cursor:pointer;background:var(--blue);color:#fff;border-color:var(--blue);font-weight:700}
+.btn.secondary{background:white;color:var(--ink);border-color:var(--line)}
+.hint{font-size:12px;color:var(--muted);margin:0 0 18px}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:20px}
+.card,.panel{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 3px 12px #0f172a08}
+.card{padding:20px}
+.label{color:var(--muted);font-size:13px}
+.value{font-size:clamp(21px,2.2vw,30px);font-weight:800;margin:11px 0 4px;letter-spacing:-.5px}
+.sub{font-size:12px;color:var(--muted)}
+.content{display:grid;grid-template-columns:minmax(250px,.85fr) minmax(0,2.15fr);gap:18px}
+.panel{padding:20px;min-width:0}
+.panel h2{font-size:17px;margin:0 0 16px}
+.chart{height:210px;display:flex;align-items:end;gap:7px;border-bottom:1px solid var(--line);padding:10px 0 0}
+.barwrap{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:6px}
+.bar{width:80%;min-height:2px;border-radius:5px 5px 0 0;background:linear-gradient(180deg,#818cf8,#4f46e5)}
+.monthlabel{font-size:10px;color:var(--muted);padding:5px 0}
+.tabletop{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}
+.count{background:#f1f5f9;border-radius:20px;padding:5px 10px;font-size:12px}
+.tablebox{overflow:auto;max-height:540px;border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:12px}
+th{position:sticky;top:0;background:#f8fafc;color:var(--muted);text-align:left;z-index:1}
+th,td{padding:12px;border-bottom:1px solid var(--line)}
+td.num,th.num{text-align:right}
+tr:hover td{background:#fafbff}
+.status{border-radius:16px;padding:4px 8px;background:#f1f5f9;display:inline-block}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+footer{padding:24px 0;color:var(--muted);font-size:12px}
+.message{margin:12px 0;padding:10px 13px;border-radius:10px;background:#eff6ff;color:#1d4ed8;font-size:12px}
+.error{background:#fef2f2;color:#b91c1c}
+.hidden{display:none}
+@media(max-width:900px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.content{grid-template-columns:1fr}}
+@media(max-width:520px){header{align-items:flex-start;flex-direction:column}.cards{grid-template-columns:1fr 1fr}main{padding:0 12px}.card{padding:14px}.value{font-size:21px}}
+</style>
+</head>
 <body>
-<header><div><h1>◈ SaaS Revenue</h1><p>Suivi des revenus SaaS reconnus · Prototype de démonstration</p></div><span class="pill">DONNÉES FICTIVES</span></header>
+<header>
+  <div>
+    <h1>◇ SaaS RevPilot</h1>
+    <p>Suivi mensuel des revenus SaaS reconnus · Prototype</p>
+  </div>
+  <span class="pill">DONNÉES FICTIVES</span>
+</header>
+
 <main>
-<div id="message"></div>
-<div class="toolbar">
-<label class="field">Business unit<select id="bu"><option value="Toutes">Toutes les BU</option><option>SyGED</option><option>Constellio</option><option>CSP</option></select></label>
-<label class="field">Mois<select id="month"></select></label>
-<label class="field">Recherche client / facture<input id="search" placeholder="Ex. client, INV-…"></label>
-</div>
-<section class="cards">
-<div class="card"><div class="label">Revenu reconnu du mois</div><div class="value" id="kpiRevenue">—</div><div class="sub" id="kpiMonth">Sélectionnez un mois</div></div>
-<div class="card"><div class="label">Revenu annuel (année du mois)</div><div class="value" id="kpiYear">—</div><div class="sub">Total des mois de l’année sélectionnée</div></div>
-<div class="card"><div class="label">Lignes de contrats</div><div class="value" id="kpiContracts">—</div><div class="sub">Après filtres de BU et recherche</div></div>
-<div class="card"><div class="label">Clients distincts</div><div class="value" id="kpiClients">—</div><div class="sub">Après filtres de BU et recherche</div></div>
-</section>
-<div class="layout">
-<section class="panel"><h2>Évolution mensuelle</h2><div class="chart" id="chart"></div><div class="legend">Revenus reconnus, MAD · sur la période disponible</div></section>
-<section class="panel"><div class="tablehead"><h2 style="margin:0">Détail des contrats</h2><span id="tableCount" class="status"></span></div><div class="tablewrap"><table><thead><tr><th>BU</th><th>Client</th><th>Facture</th><th>Début service</th><th>Fin service</th><th>Statut contrat</th><th>Revenu du mois (MAD)</th></tr></thead><tbody id="rows"></tbody></table></div></section>
-</div>
-<p class="note">Prototype local alimenté par <code>saas_ged_data.json</code>. Les montants et noms sont fictifs. Vérifier les règles de reconnaissance du revenu avant toute utilisation financière. Aucune connexion à un ERP, SharePoint ou Excel en direct n’est configurée.</p>
+  <div class="toolbar">
+    <label class="field">Business Unit
+      <select id="bu">
+        <option value="Toutes">Toutes les BU</option>
+        <option>SyGED</option>
+        <option>Constellio</option>
+        <option>CSP</option>
+      </select>
+    </label>
+
+    <label class="field">Mois de reconnaissance
+      <select id="month"></select>
+    </label>
+
+    <label class="field">Recherche client / facture
+      <input id="search" placeholder="Ex. client, INV-…">
+    </label>
+
+    <label class="field">Importer le gabarit Excel (.xlsx)
+      <input id="file" type="file" accept=".xlsx,.xls">
+    </label>
+
+    <button class="btn secondary" id="reset">Recharger les données de démonstration</button>
+    <button class="btn" id="export">Exporter le détail CSV</button>
+  </div>
+
+  <p class="hint">
+    Le gabarit est lu dans votre navigateur. Le fichier importé n’est pas envoyé à un serveur.
+    Les modifications ne sont pas enregistrées dans GitHub automatiquement.
+  </p>
+
+  <div id="message" class="message hidden"></div>
+
+  <section class="cards">
+    <div class="card">
+      <div class="label">Revenu reconnu du mois</div>
+      <div class="value" id="kpiMonth">—</div>
+      <div class="sub" id="kpiMonthSub">MAD · période sélectionnée</div>
+    </div>
+    <div class="card">
+      <div class="label">Revenu reconnu sur l’année</div>
+      <div class="value" id="kpiYear">—</div>
+      <div class="sub">Cumul des mois de l’année sélectionnée</div>
+    </div>
+    <div class="card">
+      <div class="label">Lignes de contrats</div>
+      <div class="value" id="kpiLines">—</div>
+      <div class="sub">Après filtres et recherche</div>
+    </div>
+    <div class="card">
+      <div class="label">Clients distincts</div>
+      <div class="value" id="kpiClients">—</div>
+      <div class="sub">Après filtres et recherche</div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="panel">
+      <h2>Évolution mensuelle</h2>
+      <div id="chart" class="chart"></div>
+      <p class="sub">Revenu reconnu par mois, MAD. Survolez une barre pour voir le montant.</p>
+    </div>
+
+    <div class="panel">
+      <div class="tabletop">
+        <h2>Détail des contrats</h2>
+        <span class="count" id="count">0 lignes</span>
+      </div>
+      <div class="tablebox">
+        <table>
+          <thead>
+            <tr>
+              <th>BU</th>
+              <th>Client</th>
+              <th>Produit / Plan</th>
+              <th>Facture</th>
+              <th>Date facture</th>
+              <th>Début service</th>
+              <th>Fin service</th>
+              <th>Statut contrat</th>
+              <th class="num">Montant HT</th>
+              <th class="num">Revenu du mois</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div id="empty" class="empty hidden">Aucune ligne ne correspond aux filtres.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Prototype de démonstration · MAD · Le calcul de reconnaissance est indicatif et doit être validé
+    selon les règles comptables applicables avant toute utilisation opérationnelle.
+  </footer>
 </main>
+
 <script>
-const fmt=n=>new Intl.NumberFormat('fr-MA',{style:'currency',currency:'MAD',maximumFractionDigits:2}).format(Number(n||0));
-const niceDate=s=>s?new Date(s+'T00:00:00').toLocaleDateString('fr-FR'):'—';
-let data;
-async function init(){try{const r=await fetch('./saas_ged_data.json');if(!r.ok)throw Error('Le fichier saas_ged_data.json est introuvable.');data=await r.json();const month=document.querySelector('#month');data.months.forEach(m=>{let o=document.createElement('option');o.value=m.key;o.textContent=new Date(m.date+'T00:00:00').toLocaleDateString('fr-FR',{month:'long',year:'numeric'});month.appendChild(o)});month.value=data.months.find(m=>m.key.startsWith('2026-10'))?.key||data.months[0]?.key;['bu','month','search'].forEach(id=>document.getElementById(id).addEventListener(id==='search'?'input':'change',render));render()}catch(e){document.querySelector('#message').innerHTML='<div class="error">Impossible de charger les données : '+e.message+' Ouvre l’application via un serveur local ou GitHub Pages.</div>'}}
-function labelBU(b){return b==='CSTLO'?'Constellio':b==='SYGED'?'SyGED':b}
-function currentRows(){const bu=document.querySelector('#bu').value, q=document.querySelector('#search').value.toLowerCase().trim();return data.contracts.filter(x=>(bu==='Toutes'||labelBU(x.bu)===bu)&&(!q||[x.Client,x['N° facture'],x['Produit / Plan']].some(v=>String(v||'').toLowerCase().includes(q))))}
-function render(){if(!data)return;const month=document.querySelector('#month').value, year=month.slice(0,4), bu=document.querySelector('#bu').value;const rows=currentRows();const revenue=x=>Number(x.monthly_revenue?.[month]||0);const total=rows.reduce((s,x)=>s+revenue(x),0);let yearTotal=0;data.months.filter(m=>m.key.startsWith(year)).forEach(m=>{yearTotal+=rows.reduce((s,x)=>s+Number(x.monthly_revenue?.[m.key]||0),0)});document.querySelector('#kpiRevenue').textContent=fmt(total);document.querySelector('#kpiMonth').textContent=new Date(month+'-01T00:00:00').toLocaleDateString('fr-FR',{month:'long',year:'numeric'});document.querySelector('#kpiYear').textContent=fmt(yearTotal);document.querySelector('#kpiContracts').textContent=rows.length.toLocaleString('fr-FR');document.querySelector('#kpiClients').textContent=new Set(rows.map(x=>x.Client).filter(Boolean)).size.toLocaleString('fr-FR');document.querySelector('#tableCount').textContent=rows.length+' lignes';const months=data.months.filter(m=>m.key.startsWith(year));const vals=months.map(m=>rows.reduce((s,x)=>s+Number(x.monthly_revenue?.[m.key]||0),0));const max=Math.max(...vals,1);document.querySelector('#chart').innerHTML=months.map((m,i)=>`<div class="barwrap" title="${m.key}: ${fmt(vals[i])}"><div class="bar" style="height:${Math.max(1,vals[i]/max*100)}%"></div><span>${m.key.slice(5)}</span></div>`).join('');document.querySelector('#rows').innerHTML=rows.slice().sort((a,b)=>String(a.Client||'').localeCompare(String(b.Client||''),'fr')).map(x=>`<tr><td>${labelBU(x.bu)}</td><td>${esc(x.Client||'—')}</td><td>${esc(x['N° facture']||'—')}</td><td>${niceDate(x['Début service'])}</td><td>${niceDate(x['Fin service'])}</td><td><span class="status">${esc(x['Statut contrat']||'—')}</span></td><td class="num">${fmt(revenue(x))}</td></tr>`).join('')||'<tr><td colspan="7">Aucun résultat.</td></tr>'}
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-init();
-</script></body></html>
+const DATA_URL = './saas_ged_data.json';
+let contracts = [];
+
+const $ = id => document.getElementById(id);
+const fmt = n => new Intl.NumberFormat('fr-MA', {
+  style: 'currency',
+  currency: 'MAD',
+  maximumFractionDigits: 2
+}).format(n || 0);
+
+const pad = n => String(n).padStart(2, '0');
+const keyDate = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+
+function parseDate(v) {
+  if (!v) return null;
+  if (v instanceof Date) return isNaN(v) ? null : v;
+
+  if (typeof v === 'number') {
+    const dt = XLSX.SSF.parse_date_code(v);
+    return dt ? new Date(dt.y, dt.m - 1, dt.d) : null;
+  }
+
+  const s = String(v).trim();
+  const m = s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+
+  if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
+
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
+function dateText(v) {
+  const d = parseDate(v);
+  return d
+    ? `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`
+    : '—';
+}
+
+function revenue(c, monthKey) {
+  const start = parseDate(c['Début service']);
+  const end = parseDate(c['Fin service']);
+  const amount = Number(c['Montant HT support']) || 0;
+  const status = String(c['Statut contrat'] || '').toLowerCase();
+
+  if (!start || !end || end < start || amount <= 0 || status === 'perdu') {
+    return 0;
+  }
+
+  const [y, m] = monthKey.split('-').map(Number);
+  const monthStart = new Date(y, m - 1, 1);
+  const monthEnd = new Date(y, m, 0);
+
+  if (start > monthEnd || end < monthStart) return 0;
+
+  const totalDays = Math.floor((end - start) / 86400000) + 1;
+  const overlapStart = Math.max(start.getTime(), monthStart.getTime());
+  const overlapEnd = Math.min(end.getTime(), monthEnd.getTime());
+  const serviceDays = Math.max(
+    0,
+    Math.floor((overlapEnd - overlapStart) / 86400000) + 1
+  );
+
+  if (!totalDays || !serviceDays) return 0;
+
+  return amount * serviceDays / totalDays;
+}
+
+function normalizeDemo(data) {
+  return (data.contracts || []).map(c => ({
+    ...c,
+    bu: ({
+      SYGED: 'SyGED',
+      CSTLO: 'Constellio',
+      CSP: 'CSP'
+    }[String(c.bu).toUpperCase()] || c.bu || 'Autre')
+  }));
+}
+
+function addMonthsOptions() {
+  const months = new Set();
+
+  contracts.forEach(c => {
+    const start = parseDate(c['Début service']);
+    const end = parseDate(c['Fin service']);
+    if (!start || !end || end < start) return;
+
+    const d = new Date(start.getFullYear(), start.getMonth(), 1);
+    let limit = 0;
+
+    while (d <= end && limit++ < 240) {
+      months.add(keyDate(d));
+      d.setMonth(d.getMonth() + 1);
+    }
+  });
+
+  const now = keyDate(new Date());
+  months.add(now);
+
+  const sorted = [...months].sort();
+
+  $('month').innerHTML = sorted.map(m => {
+    const label = new Intl.DateTimeFormat('fr-FR', {
+      month: 'long',
+      year: 'numeric'
+    }).format(new Date(+m.slice(0, 4), +m.slice(5) - 1, 1));
+
+    return `<option value="${m}">${label}</option>`;
+  }).join('');
+
+  $('month').value = sorted.includes(now) ? now : sorted[sorted.length - 1];
+}
+
+function filtered() {
+  const bu = $('bu').value;
+  const q = $('search').value.trim().toLocaleLowerCase('fr');
+
+  return contracts.filter(c =>
+    (bu === 'Toutes' || c.bu === bu) &&
+    (!q || [
+      c.Client,
+      c['N° facture'],
+      c['Produit / Plan']
+    ].some(v => String(v || '').toLocaleLowerCase('fr').includes(q)))
+  );
+}
+
+function render() {
+  const month = $('month').value || keyDate(new Date());
+  const year = month.slice(0, 4);
+  const rows = filtered();
+
+  const monthTotal = rows.reduce((sum, c) => sum + revenue(c, month), 0);
+  const yearTotal = rows.reduce((sum, c) => {
+    for (let m = 1; m <= 12; m++) {
+      sum += revenue(c, `${year}-${pad(m)}`);
+    }
+    return sum;
+  }, 0);
+
+  $('kpiMonth').textContent = fmt(monthTotal);
+  $('kpiMonthSub').textContent = new Intl.DateTimeFormat('fr-FR', {
+    month: 'long',
+    year: 'numeric'
+  }).format(new Date(+year, +month.slice(5) - 1, 1));
+
+  $('kpiYear').textContent = fmt(yearTotal);
+  $('kpiLines').textContent = rows.length.toLocaleString('fr-FR');
+  $('kpiClients').textContent = new Set(
+    rows.map(c => c.Client).filter(Boolean)
+  ).size.toLocaleString('fr-FR');
+
+  $('count').textContent = `${rows.length} lignes`;
+
+  $('tbody').innerHTML = rows.map(c => `
+    <tr>
+      <td>${esc(c.bu)}</td>
+      <td>${esc(c.Client || '—')}</td>
+      <td>${esc(c['Produit / Plan'] || '—')}</td>
+      <td>${esc(c['N° facture'] || '—')}</td>
+      <td>${dateText(c['Date facturation'])}</td>
+      <td>${dateText(c['Début service'])}</td>
+      <td>${dateText(c['Fin service'])}</td>
+      <td><span class="status">${esc(c['Statut contrat'] || 'À vérifier')}</span></td>
+      <td class="num">${fmt(Number(c['Montant HT support']) || 0)}</td>
+      <td class="num"><b>${fmt(revenue(c, month))}</b></td>
+    </tr>
+  `).join('');
+
+  $('empty').classList.toggle('hidden', rows.length > 0);
+  renderChart(rows, year);
+}
+
+function renderChart(rows, year) {
+  const values = Array.from({ length: 12 }, (_, i) =>
+    rows.reduce((sum, c) => sum + revenue(c, `${year}-${pad(i + 1)}`), 0)
+  );
+
+  const max = Math.max(...values, 1);
+
+  $('chart').innerHTML = values.map((value, i) => `
+    <div class="barwrap">
+      <div class="bar" title="${fmt(value)}"
+        style="height:${Math.max(value ? 2 : 0, value / max * 82)}%">
+      </div>
+      <span class="monthlabel">${pad(i + 1)}</span>
+    </div>
+  `).join('');
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[c]));
+}
+
+function showMessage(message, error = false) {
+  $('message').textContent = message;
+  $('message').classList.remove('hidden', 'error');
+  if (error) $('message').classList.add('error');
+}
+
+function mapSheetRows(ws, bu) {
+  const rows = XLSX.utils.sheet_to_json(ws, {
+    header: 1,
+    raw: true,
+    defval: null
+  });
+
+  if (rows.length < 5) return [];
+
+  const out = [];
+
+  for (let i = 5; i < rows.length; i++) {
+    const r = rows[i];
+    if (!r || (!r[0] && !r[2])) continue;
+
+    const c = {
+      bu,
+      Client: r[0],
+      'Produit / Plan': r[1],
+      'N° facture': r[2],
+      'Date facturation': r[3],
+      'Fréquence': r[4],
+      'Début service': r[5],
+      'Fin service': r[6],
+      'Montant HT support': r[7],
+      'Période partielle ?': r[8],
+      'Durée (mois)': r[9],
+      'Statut paiement': r[10],
+      'Statut contrat': r[11],
+      'Remarques': r[12]
+    };
+
+    if (c.Client || c['N° facture']) out.push(c);
+  }
+
+  return out;
+}
+
+$('file').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  try {
+    if (!window.XLSX) {
+      throw new Error('La bibliothèque Excel ne s’est pas chargée. Vérifiez votre connexion Internet.');
+    }
+
+    const buffer = await file.arrayBuffer();
+    const workbook = XLSX.read(buffer, { type: 'array', cellDates: true });
+
+    const sheetMap = [
+      ['SAAS SYGED', 'SyGED'],
+      ['SAAS CSTLO', 'Constellio'],
+      ['SAAS CSP', 'CSP']
+    ];
+
+    let imported = [];
+
+    for (const [sheetName, bu] of sheetMap) {
+      if (workbook.Sheets[sheetName]) {
+        imported.push(...mapSheetRows(workbook.Sheets[sheetName], bu));
+      }
+    }
+
+    if (!imported.length) {
+      throw new Error(
+        'Aucune ligne détectée. Vérifiez les noms des onglets et la structure du gabarit Excel.'
+      );
+    }
+
+    contracts = imported;
+    addMonthsOptions();
+    render();
+
+    showMessage(
+      `${imported.length} lignes importées depuis « ${file.name} ». Les données restent dans cette session de navigateur.`
+    );
+  } catch (error) {
+    showMessage(error.message || 'Erreur lors de la lecture du fichier.', true);
+  }
+});
+
+$('reset').addEventListener('click', async () => {
+  try {
+    const response = await fetch(DATA_URL, { cache: 'no-store' });
+
+    if (!response.ok) {
+      throw new Error(
+        'Impossible de charger saas_ged_data.json. Vérifiez que le fichier est présent à la racine du dépôt.'
+      );
+    }
+
+    contracts = normalizeDemo(await response.json());
+    addMonthsOptions();
+    render();
+    $('file').value = '';
+
+    showMessage('Données fictives de démonstration rechargées.');
+  } catch (error) {
+    showMessage(error.message, true);
+  }
+});
+
+$('export').addEventListener('click', () => {
+  const month = $('month').value;
+
+  const rows = filtered().map(c => ({
+    'Business Unit': c.bu,
+    'Client': c.Client,
+    'Produit / Plan': c['Produit / Plan'],
+    'N° facture': c['N° facture'],
+    'Date facturation': dateText(c['Date facturation']),
+    'Début service': dateText(c['Début service']),
+    'Fin service': dateText(c['Fin service']),
+    'Statut contrat': c['Statut contrat'],
+    'Montant HT': c['Montant HT support'],
+    'Mois reconnu': month,
+    'Revenu reconnu MAD': revenue(c, month)
+  }));
+
+  const headers = Object.keys(rows[0] || { 'Info': 'Aucune ligne' });
+
+  const csv = [headers, ...rows.map(row =>
+    headers.map(header => row[header] ?? '')
+  )].map(row =>
+    row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(';')
+  ).join('\r\n');
+
+  const blob = new Blob(['\ufeff' + csv], {
+    type: 'text/csv;charset=utf-8;'
+  });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+
+  link.href = url;
+  link.download = `SaaS_RevPilot_Detail_${month}.csv`;
+  link.click();
+
+  URL.revokeObjectURL(url);
+});
+
+['bu', 'month', 'search'].forEach(id =>
+  $(id).addEventListener(id === 'search' ? 'input' : 'change', render)
+);
+
+(async () => {
+  try {
+    const response = await fetch(DATA_URL);
+
+    if (!response.ok) {
+      throw new Error('Données JSON non disponibles');
+    }
+
+    contracts = normalizeDemo(await response.json());
+    addMonthsOptions();
+    render();
+
+    showMessage(
+      `${contracts.length} lignes de démonstration chargées. Importez votre gabarit Excel pour actualiser les données.`
+    );
+  } catch (error) {
+    contracts = [];
+    addMonthsOptions();
+    render();
+
+    showMessage(
+      'Les données de démonstration ne sont pas accessibles. Vérifiez le fichier saas_ged_data.json à la racine du dépôt.',
+      true
+    );
+  }
+})();
+</script>
+</body>
+</html>
