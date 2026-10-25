@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SaaS Revenue | Prototype</title>
+<style>
+:root{--bg:#f5f7fb;--panel:#fff;--ink:#172033;--muted:#667085;--line:#e5e9f2;--accent:#4f46e5;--accent2:#eef2ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,Segoe UI,Arial,sans-serif}
+header{background:#111827;color:#fff;padding:24px max(20px,calc((100% - 1400px)/2));display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+header h1{font-size:23px;margin:0}header p{margin:3px 0 0;color:#cbd5e1;font-size:13px}
+main{max-width:1400px;margin:24px auto;padding:0 20px 48px}.toolbar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;align-items:end}
+.field{display:flex;flex-direction:column;gap:5px;color:var(--muted);font-size:12px;font-weight:600}
+select,input{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:white;color:var(--ink);min-width:180px}
+.pill{display:inline-flex;align-items:center;background:#dcfce7;color:#166534;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 2px 8px #10182808}
+.card .label{font-size:12px;color:var(--muted);font-weight:600}.card .value{font-size:27px;font-weight:750;margin-top:8px;letter-spacing:-.5px}.card .sub{font-size:12px;color:var(--muted);margin-top:3px}
+.layout{display:grid;grid-template-columns:1.1fr 2fr;gap:16px}.panel h2{font-size:16px;margin:0 0 14px}.chart{display:flex;align-items:end;gap:4px;height:190px;padding:14px 0 24px;border-bottom:1px solid var(--line);overflow:hidden}.barwrap{flex:1;min-width:5px;height:100%;display:flex;align-items:end;position:relative}.bar{width:100%;background:linear-gradient(180deg,#818cf8,#4f46e5);border-radius:4px 4px 0 0;min-height:2px}.barwrap span{position:absolute;bottom:-23px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--muted);white-space:nowrap}
+.legend{font-size:12px;color:var(--muted);margin-top:12px}.tablehead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.tablehead input{min-width:220px} .tablewrap{overflow:auto;max-height:520px}
+table{width:100%;border-collapse:collapse;white-space:nowrap;font-size:13px}th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line)}th{position:sticky;top:0;background:#f8fafc;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}td.num{text-align:right;font-variant-numeric:tabular-nums}
+.status{display:inline-block;padding:3px 8px;background:#f1f5f9;border-radius:20px;font-size:11px}
+.note{color:var(--muted);font-size:12px;margin-top:16px}.error{background:#fef2f2;color:#991b1b;padding:16px;border-radius:12px}
+@media(max-width:900px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}}
+@media(max-width:520px){.cards{grid-template-columns:1fr 1fr}.card .value{font-size:20px}header h1{font-size:19px}}
+</style></head>
+<body>
+<header><div><h1>◈ SaaS Revenue</h1><p>Suivi des revenus SaaS reconnus · Prototype de démonstration</p></div><span class="pill">DONNÉES FICTIVES</span></header>
+<main>
+<div id="message"></div>
+<div class="toolbar">
+<label class="field">Business unit<select id="bu"><option value="Toutes">Toutes les BU</option><option>SyGED</option><option>Constellio</option><option>CSP</option></select></label>
+<label class="field">Mois<select id="month"></select></label>
+<label class="field">Recherche client / facture<input id="search" placeholder="Ex. client, INV-…"></label>
+</div>
+<section class="cards">
+<div class="card"><div class="label">Revenu reconnu du mois</div><div class="value" id="kpiRevenue">—</div><div class="sub" id="kpiMonth">Sélectionnez un mois</div></div>
+<div class="card"><div class="label">Revenu annuel (année du mois)</div><div class="value" id="kpiYear">—</div><div class="sub">Total des mois de l’année sélectionnée</div></div>
+<div class="card"><div class="label">Lignes de contrats</div><div class="value" id="kpiContracts">—</div><div class="sub">Après filtres de BU et recherche</div></div>
+<div class="card"><div class="label">Clients distincts</div><div class="value" id="kpiClients">—</div><div class="sub">Après filtres de BU et recherche</div></div>
+</section>
+<div class="layout">
+<section class="panel"><h2>Évolution mensuelle</h2><div class="chart" id="chart"></div><div class="legend">Revenus reconnus, MAD · sur la période disponible</div></section>
+<section class="panel"><div class="tablehead"><h2 style="margin:0">Détail des contrats</h2><span id="tableCount" class="status"></span></div><div class="tablewrap"><table><thead><tr><th>BU</th><th>Client</th><th>Facture</th><th>Début service</th><th>Fin service</th><th>Statut contrat</th><th>Revenu du mois (MAD)</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+</div>
+<p class="note">Prototype local alimenté par <code>saas_ged_data.json</code>. Les montants et noms sont fictifs. Vérifier les règles de reconnaissance du revenu avant toute utilisation financière. Aucune connexion à un ERP, SharePoint ou Excel en direct n’est configurée.</p>
+</main>
+<script>
+const fmt=n=>new Intl.NumberFormat('fr-MA',{style:'currency',currency:'MAD',maximumFractionDigits:2}).format(Number(n||0));
+const niceDate=s=>s?new Date(s+'T00:00:00').toLocaleDateString('fr-FR'):'—';
+let data;
+async function init(){try{const r=await fetch('./saas_ged_data.json');if(!r.ok)throw Error('Le fichier saas_ged_data.json est introuvable.');data=await r.json();const month=document.querySelector('#month');data.months.forEach(m=>{let o=document.createElement('option');o.value=m.key;o.textContent=new Date(m.date+'T00:00:00').toLocaleDateString('fr-FR',{month:'long',year:'numeric'});month.appendChild(o)});month.value=data.months.find(m=>m.key.startsWith('2026-10'))?.key||data.months[0]?.key;['bu','month','search'].forEach(id=>document.getElementById(id).addEventListener(id==='search'?'input':'change',render));render()}catch(e){document.querySelector('#message').innerHTML='<div class="error">Impossible de charger les données : '+e.message+' Ouvre l’application via un serveur local ou GitHub Pages.</div>'}}
+function labelBU(b){return b==='CSTLO'?'Constellio':b==='SYGED'?'SyGED':b}
+function currentRows(){const bu=document.querySelector('#bu').value, q=document.querySelector('#search').value.toLowerCase().trim();return data.contracts.filter(x=>(bu==='Toutes'||labelBU(x.bu)===bu)&&(!q||[x.Client,x['N° facture'],x['Produit / Plan']].some(v=>String(v||'').toLowerCase().includes(q))))}
+function render(){if(!data)return;const month=document.querySelector('#month').value, year=month.slice(0,4), bu=document.querySelector('#bu').value;const rows=currentRows();const revenue=x=>Number(x.monthly_revenue?.[month]||0);const total=rows.reduce((s,x)=>s+revenue(x),0);let yearTotal=0;data.months.filter(m=>m.key.startsWith(year)).forEach(m=>{yearTotal+=rows.reduce((s,x)=>s+Number(x.monthly_revenue?.[m.key]||0),0)});document.querySelector('#kpiRevenue').textContent=fmt(total);document.querySelector('#kpiMonth').textContent=new Date(month+'-01T00:00:00').toLocaleDateString('fr-FR',{month:'long',year:'numeric'});document.querySelector('#kpiYear').textContent=fmt(yearTotal);document.querySelector('#kpiContracts').textContent=rows.length.toLocaleString('fr-FR');document.querySelector('#kpiClients').textContent=new Set(rows.map(x=>x.Client).filter(Boolean)).size.toLocaleString('fr-FR');document.querySelector('#tableCount').textContent=rows.length+' lignes';const months=data.months.filter(m=>m.key.startsWith(year));const vals=months.map(m=>rows.reduce((s,x)=>s+Number(x.monthly_revenue?.[m.key]||0),0));const max=Math.max(...vals,1);document.querySelector('#chart').innerHTML=months.map((m,i)=>`<div class="barwrap" title="${m.key}: ${fmt(vals[i])}"><div class="bar" style="height:${Math.max(1,vals[i]/max*100)}%"></div><span>${m.key.slice(5)}</span></div>`).join('');document.querySelector('#rows').innerHTML=rows.slice().sort((a,b)=>String(a.Client||'').localeCompare(String(b.Client||''),'fr')).map(x=>`<tr><td>${labelBU(x.bu)}</td><td>${esc(x.Client||'—')}</td><td>${esc(x['N° facture']||'—')}</td><td>${niceDate(x['Début service'])}</td><td>${niceDate(x['Fin service'])}</td><td><span class="status">${esc(x['Statut contrat']||'—')}</span></td><td class="num">${fmt(revenue(x))}</td></tr>`).join('')||'<tr><td colspan="7">Aucun résultat.</td></tr>'}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+init();
+</script></body></html>
